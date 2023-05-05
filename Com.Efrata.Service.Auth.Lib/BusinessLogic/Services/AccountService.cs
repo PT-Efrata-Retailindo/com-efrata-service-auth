@@ -82,7 +82,7 @@ namespace Com.Efrata.Service.Auth.Lib.BusinessLogic.Services
             {
 
                 AccountProfile = x.AccountProfile,
-                AccountRoles = x.AccountRoles,
+                //AccountRoles = x.AccountRoles,
                 Active = x.Active,
                 CreatedAgent = x.CreatedAgent,
                 CreatedBy = x.CreatedBy,
@@ -115,6 +115,18 @@ namespace Com.Efrata.Service.Auth.Lib.BusinessLogic.Services
                     .ThenInclude(y => y.Permissions)
                 .FirstOrDefaultAsync(d => d.Id.Equals(id) && !d.IsDeleted);
             return result;
+        }
+
+        public async Task<int> UpdatePass(string username, string password)
+        {
+            var data = await DbSet.FirstOrDefaultAsync(x => x.Username.Equals(username));
+            if (!string.IsNullOrEmpty(password))
+            {
+                data.Password = SHA1Encrypt.Hash(password);
+            }
+            EntityExtension.FlagForUpdate(data, IdentityService.Username, UserAgent);
+            DbSet.Update(data);
+            return await DbContext.SaveChangesAsync();
         }
 
         public async Task<int> UpdateAsync(int id, Account model)
